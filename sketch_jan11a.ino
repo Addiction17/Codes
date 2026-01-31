@@ -57,7 +57,7 @@ void onReceive(const esp_now_recv_info_t *info, const uint8_t *data, int len) {
 
 void setup() {
   Serial.begin(9600);
-  srituhobby.begin(SSD1306_SWITCHCAPVCC, 0x3C);// Address 0x3C for 128x32
+  srituhobby.begin(SSD1306_SWITCHCAPVCC, 0x3C);
   delay(1000);
   srituhobby.clearDisplay();
 
