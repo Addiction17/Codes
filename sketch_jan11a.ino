@@ -5,7 +5,8 @@
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
 #include <SoftwareSerial.h>
-
+#include <WiFi.h>
+#include <esp_now.h>
 SoftwareSerial gsm(7, 8); // RX, TX
 Adafruit_SSD1306 srituhobby = Adafruit_SSD1306(128, 64, &Wire);
 
@@ -30,6 +31,30 @@ long Ltime = 0;
 int count = 0;
 int Bpm = 0;
 
+typedef struct struct_message {
+  int bpm;
+  bool highAlert;
+  bool lowAlert;
+} struct_message;
+
+struct_message incomingData;
+
+void onReceive(const esp_now_recv_info_t *info, const uint8_t *data, int len) {
+  memcpy(&incomingData, data, sizeof(incomingData));
+
+  Serial.print("BPM: ");
+  Serial.println(incomingData.bpm);
+
+  if (incomingData.highAlert) {
+    Serial.println("⚠️ HIGH HEART RATE");
+  }
+
+  if (incomingData.lowAlert) {
+    Serial.println("⚠️ LOW HEART RATE");
+  }
+}
+
+
 void setup() {
   Serial.begin(9600);
   srituhobby.begin(SSD1306_SWITCHCAPVCC, 0x3C);// Address 0x3C for 128x32
@@ -44,6 +69,15 @@ delay(1000);
 
 gsm.println("AT+CMGF=1"); // SMS text mode
 delay(1000);
+
+WiFi.mode(WIFI_STA);
+
+  Serial.print("Receiver MAC: ");
+  Serial.println(WiFi.macAddress());
+
+  esp_now_init();
+  esp_now_register_recv_cb(onReceive);
+
 }
 
 void loop() {
